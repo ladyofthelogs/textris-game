@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 // Replace with the actual repository name
-const repoName = 'GameJamAITemplate';
+const repoName = 'textris-game';
 
 const nextConfig = {
   basePath: `/${repoName}`,
