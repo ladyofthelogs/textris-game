@@ -294,3 +294,21 @@ body {
 .restart-button:hover {
   background-color: #0056b3;
 }
+
+.nyan-cat-container {
+  position: fixed;
+  top: 50%;
+  left: -200px; /* Start off-screen to the left */
+  transform: translateY(-50%);
+  z-index: 100;
+  transition: left 2.5s linear; /* Animation duration */
+}
+
+.nyan-cat-container.fly-in {
+  left: 100vw; /* End off-screen to the right */
+}
+
+.nyan-cat-image {
+  width: 150px; /* Adjust size as needed */
+  height: auto;
+}

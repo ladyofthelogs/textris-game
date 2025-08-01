@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import NyanCat from './NyanCat';
 
 // Helper function to generate a random letter
 const getRandomLetter = () => {
@@ -59,6 +60,7 @@ const Game = () => {
   const [isDragging, setIsDragging] = useState(false); // New state to track dragging
   const [placeholderShapeIndex, setPlaceholderShapeIndex] = useState(null); // New state for placeholder
   const [scoreAnimationTrigger, setScoreAnimationTrigger] = useState(0); // New state to trigger score animation
+  const [nyanCatTrigger, setNyanCatTrigger] = useState(0); // New state to trigger Nyan Cat animation
 
   const handleRestartGame = useCallback(() => {
     setScore(0);
@@ -516,8 +518,18 @@ const Game = () => {
         setClearingCells([]); // Reset clearing cells
         console.log(`Cleared ${cellsToClear.length} cells. New score: ${newScore}`);
         setScoreAnimationTrigger(prev => prev + 1); // Trigger animation
+        if (validatedWords.length > 0) {
+          setNyanCatTrigger(prev => prev + 1); // Trigger Nyan Cat animation
+        }
       }, 300); // Delay clearing for 300ms to allow animation to play out
-    } else if (newScore !== score) {
+    }
+    
+    // Trigger Nyan Cat animation if words were validated, regardless of cells cleared
+    if (validatedWords.length > 0) {
+      setNyanCatTrigger(prev => prev + 1);
+    }
+
+    if (newScore !== score) {
       setScore(newScore); // Update score immediately if only score changed (e.g., from lines cleared without words)
       setScoreAnimationTrigger(prev => prev + 1); // Trigger animation
     }
@@ -584,6 +596,7 @@ const Game = () => {
 
   return (
     <div className={`game-container ${gameOver ? 'dimmed' : ''}`}>
+      <NyanCat trigger={nyanCatTrigger} />
       <h1>TEXTRIS</h1>
       {gameOver && (
         <div className="game-over-overlay">
