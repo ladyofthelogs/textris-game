@@ -584,11 +584,10 @@ const Game = () => {
         </div>
       )}
       <div className="game-info-top">
-        <p>Score Needed: {scoreNeeded}</p>
+        <div className="score-display-main">
+          {score}
+        </div>
         <p>Time: {formatTime(timeLeft)}</p>
-      </div>
-      <div className="score-display-main">
-        {score}
       </div>
 
       <div
