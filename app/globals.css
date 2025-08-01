@@ -74,7 +74,7 @@ body {
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
-  background-color: lightblue; /* Debug background */
+  background-color: transparent; /* Remove debug background */
 }
 
 .upcoming-shapes h2 {
@@ -85,22 +85,27 @@ body {
 .shape-preview-container {
   display: flex;
   /* Remove gap for debugging */
-  background-color: #ffeb3b; /* Yellow background for visibility */
-  padding: 5px; /* Add some padding */
+  background-color: transparent; /* Remove yellow background */
+  padding: 0; /* Remove padding */
+  width: 320px; /* Set to grid width */
+  justify-content: space-around; /* Distribute shapes evenly */
 }
 
 .shape-preview {
   /* Make it a simple block container */
-  border: 1px solid #64b5f6;
-  background-color: #bbdefb;
-  padding: 5px; /* Add some padding for better visual separation */
-  width: auto;
-  height: auto;
+  border: none; /* Remove border */
+  background-color: transparent; /* Remove background */
+  padding: 0; /* Remove padding */
+  width: 80px; /* Set a fixed width for each preview to maintain consistent bounding box */
+  height: 80px; /* Set a fixed height for each preview */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .shape-grid {
-  display: grid; /* Make shape-grid a grid */
-  grid-template-columns: repeat(auto-fit, minmax(20px, 1fr)); /* Flexible columns */
+  display: grid;
+  /* grid-template-columns will be set dynamically by React based on shape dimensions */
 }
 
 .shape-row {
