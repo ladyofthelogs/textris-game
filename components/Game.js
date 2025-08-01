@@ -4,7 +4,9 @@ const Game = () => {
   const [score, setScore] = useState(0);
   const [scoreNeeded, setScoreNeeded] = useState(100); // Example: 100 points needed for level 1
   const [timeLeft, setTimeLeft] = useState(60); // 1 minute timer
-  const [grid, setGrid] = useState(Array(8).fill(Array(8).fill(null))); // 8x8 grid, null for empty
+  const [grid, setGrid] = useState(() =>
+    Array(8).fill(null).map(() => Array(8).fill(null))
+  ); // 8x8 grid, null for empty, ensuring unique inner arrays
   const [upcomingShapes, setUpcomingShapes] = useState([
     [['A', 'B'], ['C', 'D']], // Example shape 1 (2x2 block)
     [['E'], ['F'], ['G']],    // Example shape 2 (I shape)
@@ -40,22 +42,112 @@ const Game = () => {
 
   const handleDragStart = (e, shape, index) => {
     console.log('Drag Start - Shape:', shape, 'Index:', index);
+    e.dataTransfer.setData('application/json', JSON.stringify({ shape, index }));
+    e.dataTransfer.effectAllowed = 'move'; // Explicitly allow 'move' effect
     setDraggedShape(shape);
     setDraggedShapeIndex(index);
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
-    // Logic for ghosting will go here
+    if (!draggedShape) {
+      console.log('No draggedShape in state, returning.');
+      return;
+    }
+    const currentDraggedShape = draggedShape;
+
+    const gameGrid = e.currentTarget;
+    const gridRect = gameGrid.getBoundingClientRect();
+    const cellSize = 40;
+
+    const mouseX = e.clientX - gridRect.left;
+    const mouseY = e.clientY - gridRect.top;
+
+    const startCol = Math.floor(mouseX / cellSize);
+    const startRow = Math.floor(mouseY / cellSize);
+
+    console.log(`MouseX: ${mouseX}, MouseY: ${mouseY}, StartRow: ${startRow}, StartCol: ${startCol}`);
+
+    const newGhostShape = [];
+    let canPlace = true;
+
+    for (let r = 0; r < currentDraggedShape.length; r++) {
+      for (let c = 0; c < currentDraggedShape[r].length; c++) {
+        if (currentDraggedShape[r][c] !== null) {
+          const gridRow = startRow + r;
+          const gridCol = startCol + c;
+
+          if (
+            gridRow >= grid.length ||
+            gridCol >= grid[0].length ||
+            (grid[gridRow] && grid[gridRow][gridCol] !== null)
+          ) {
+            canPlace = false;
+            break;
+          }
+          newGhostShape.push({ row: gridRow, col: gridCol });
+        }
+      }
+      if (!canPlace) break;
+    }
+
+    console.log('Can Place:', canPlace, 'New Ghost Shape:', newGhostShape);
+
+    if (canPlace) {
+      setGhostShape(newGhostShape);
+    } else {
+      setGhostShape(null);
+    }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    // Logic for placing the shape will go here
+    console.log('Drop event triggered.');
+    if (!ghostShape) {
+      console.log('No ghostShape, cannot drop.');
+      return;
+    }
+
+    if (!draggedShape || draggedShapeIndex === null) {
+      console.log('No draggedShape or draggedShapeIndex in state, cannot drop.');
+      return;
+    }
+    const shape = draggedShape;
+    const index = draggedShapeIndex;
+
+    const newGrid = grid.map(row => [...row]);
+
+    const startRow = ghostShape[0].row;
+    const startCol = ghostShape[0].col;
+
+    console.log(`Dropping shape at startRow: ${startRow}, startCol: ${startCol}`);
+
+    for (let r = 0; r < shape.length; r++) {
+      for (let c = 0; c < shape[r].length; c++) {
+        if (shape[r][c] !== null) {
+          const gridRow = startRow + r;
+          const gridCol = startCol + c;
+          newGrid[gridRow][gridCol] = shape[r][c];
+          console.log(`Placed ${shape[r][c]} at [${gridRow}, ${gridCol}]`);
+        }
+      }
+    }
+
+    setGrid(newGrid);
+    console.log('Grid updated.');
+
+    setUpcomingShapes((prevShapes) => {
+      const updatedShapes = prevShapes.filter((_, i) => i !== index);
+      console.log('Upcoming shapes updated:', updatedShapes);
+      return updatedShapes;
+    });
+
     setDraggedShape(null);
     setDraggedShapeIndex(null);
     setGhostShape(null);
+    console.log('Drag state reset.');
   };
+
 
   const handleDragEnd = () => {
     setDraggedShape(null);
@@ -102,23 +194,22 @@ const Game = () => {
         className="game-grid"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onDragLeave={handleDragEnd}
+        onDragLeave={() => setGhostShape(null)}
       >
         {grid.map((row, rowIndex) => (
-          row.map((cell, colIndex) => (
-            <div
-              key={`${rowIndex}-${colIndex}`}
-              className={`grid-cell ${
-                ghostShape && ghostShape.some(
-                  (g) => g.row === rowIndex && g.col === colIndex
-                )
-                  ? 'ghost-cell'
-                  : ''
-              }`}
-            >
-              {cell}
-            </div>
-          ))
+          row.map((cell, colIndex) => {
+            const isGhost = ghostShape && ghostShape.some(
+              (g) => g.row === rowIndex && g.col === colIndex
+            );
+            return (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className={`grid-cell ${isGhost ? 'ghost-cell' : ''}`}
+              >
+                {cell}
+              </div>
+            );
+          })
         ))}
       </div>
 
