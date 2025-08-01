@@ -51,6 +51,7 @@ const Game = () => {
   const [ghostShape, setGhostShape] = useState(null);
   const [gameOver, setGameOver] = useState(false);
   const [gameStatus, setGameStatus] = useState(''); // 'win', 'lose', ''
+  const [clearingCells, setClearingCells] = useState([]); // Stores coordinates of cells being cleared
 
   useEffect(() => {
     // Initialize upcoming shapes only once on component mount
@@ -315,14 +316,15 @@ const Game = () => {
   const checkGridForMatches = useCallback((currentGrid) => {
     let newScore = score;
     let updatedGrid = currentGrid.map(row => [...row]);
-    let linesCleared = 0;
+    let cellsToClear = []; // Collect all cells to be cleared for UX feedback
 
     // Check rows
     for (let r = 0; r < updatedGrid.length; r++) {
       if (updatedGrid[r].every(cell => cell !== null)) {
-        updatedGrid[r].fill(null); // Clear the row
+        for (let c = 0; c < updatedGrid[r].length; c++) {
+          cellsToClear.push({ r, c });
+        }
         newScore += 10; // Award points for clearing a row
-        linesCleared++;
       }
     }
 
@@ -337,17 +339,78 @@ const Game = () => {
       }
       if (isColumnFull) {
         for (let r = 0; r < updatedGrid.length; r++) {
-          updatedGrid[r][c] = null; // Clear the column
+          cellsToClear.push({ r, c });
         }
         newScore += 10; // Award points for clearing a column
-        linesCleared++;
       }
     }
 
-    if (linesCleared > 0) {
-      setGrid(updatedGrid);
-      setScore(newScore);
-      console.log(`Cleared ${linesCleared} lines. New score: ${newScore}`);
+    // Check for horizontal words
+    for (let r = 0; r < updatedGrid.length; r++) {
+      let currentWord = '';
+      let wordCells = [];
+      for (let c = 0; c < updatedGrid[r].length; c++) {
+        if (updatedGrid[r][c] !== null) {
+          currentWord += updatedGrid[r][c];
+          wordCells.push({ r, c });
+        } else {
+          if (currentWord.length >= 3) {
+            newScore += currentWord.length * 5; // Award points for word length
+            cellsToClear.push(...wordCells); // Add to cells to clear
+            console.log(`Formed horizontal word: ${currentWord}. Awarded ${currentWord.length * 5} points.`);
+          }
+          currentWord = '';
+          wordCells = [];
+        }
+      }
+      // Check at the end of the row
+      if (currentWord.length >= 3) {
+        newScore += currentWord.length * 5;
+        cellsToClear.push(...wordCells); // Add to cells to clear
+        console.log(`Formed horizontal word: ${currentWord}. Awarded ${currentWord.length * 5} points.`);
+      }
+    }
+
+    // Check for vertical words
+    for (let c = 0; c < updatedGrid[0].length; c++) {
+      let currentWord = '';
+      let wordCells = [];
+      for (let r = 0; r < updatedGrid.length; r++) {
+        if (updatedGrid[r][c] !== null) {
+          currentWord += updatedGrid[r][c];
+          wordCells.push({ r, c });
+        } else {
+          if (currentWord.length >= 3) {
+            newScore += currentWord.length * 5; // Award points for word length
+            cellsToClear.push(...wordCells); // Add to cells to clear
+            console.log(`Formed vertical word: ${currentWord}. Awarded ${currentWord.length * 5} points.`);
+          }
+          currentWord = '';
+          wordCells = [];
+        }
+      }
+      // Check at the end of the column
+      if (currentWord.length >= 3) {
+        newScore += currentWord.length * 5;
+        cellsToClear.push(...wordCells); // Add to cells to clear
+        console.log(`Formed vertical word: ${currentWord}. Awarded ${currentWord.length * 5} points.`);
+      }
+    }
+
+    if (cellsToClear.length > 0) {
+      setClearingCells(cellsToClear); // Set cells to be highlighted for clearing
+      setTimeout(() => {
+        const finalGrid = updatedGrid.map(row => [...row]);
+        cellsToClear.forEach(cell => {
+          finalGrid[cell.r][cell.c] = null; // Clear the cells
+        });
+        setGrid(finalGrid);
+        setScore(newScore);
+        setClearingCells([]); // Reset clearing cells
+        console.log(`Cleared ${cellsToClear.length} cells. New score: ${newScore}`);
+      }, 500); // Delay clearing for 500ms for UX feedback
+    } else if (newScore !== score) {
+      setScore(newScore); // Update score immediately if only score changed (e.g., from lines cleared without words)
     }
 
     if (newScore >= scoreNeeded) {
@@ -429,10 +492,13 @@ const Game = () => {
             const isGhost = ghostShape && ghostShape.some(
               (g) => g.row === rowIndex && g.col === colIndex
             );
+            const isClearing = clearingCells.some(
+              (c) => c.r === rowIndex && c.c === colIndex
+            );
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className={`grid-cell ${isGhost ? 'ghost-cell' : ''}`}
+                className={`grid-cell ${isGhost ? 'ghost-cell' : ''} ${isClearing ? 'clearing-cell' : ''}`}
               >
                 {cell}
               </div>
