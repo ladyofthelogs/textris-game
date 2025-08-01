@@ -2,8 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 // Helper function to generate a random letter
 const getRandomLetter = () => {
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  return alphabet[Math.floor(Math.random() * alphabet.length)];
+  const vowels = 'AEIOU';
+  const commonConsonants = 'RSTLN'; // Common consonants
+  const lessCommonLetters = 'BCDFGHJKMPQVWXYZ'; // Less common letters
+
+  // Adjust probabilities
+  const letters = [
+    ...Array(5).fill(vowels), // 50% chance for vowels
+    ...Array(3).fill(commonConsonants), // 30% chance for common consonants
+    ...Array(2).fill(lessCommonLetters), // 20% chance for less common letters
+  ].flat();
+
+  const chosenCategory = letters[Math.floor(Math.random() * letters.length)];
+  return chosenCategory[Math.floor(Math.random() * chosenCategory.length)];
 };
 
 // Helper function to generate a random shape
