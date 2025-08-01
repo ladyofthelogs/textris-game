@@ -20,14 +20,18 @@ const getRandomLetter = () => {
 // Helper function to generate a random shape
 const generateRandomShape = () => {
   const shapeTypes = [
-    [[1, 1], [1, 1]], // 2x2 block
-    [[1, 1, 1]], // 1x3 block
-    [[1], [1], [1]], // 3x1 block
-    [[1, 1, 0], [0, 1, 1]], // Z shape (horizontal)
-    [[0, 1], [1, 1], [1, 0]], // Z shape (vertical)
-    [[0, 1, 1], [1, 1, 0]], // S shape (horizontal)
-    [[1, 0], [1, 1], [0, 1]], // S shape (vertical)
-    [[1, 1, 1], [0, 1, 0]], // T shape
+    // Squares
+    [[1, 1], [1, 1]], // 2x2 square
+
+    // Lines (horizontal)
+    [[1, 1]], // 1x2 line
+    [[1, 1, 1]], // 1x3 line
+    [[1, 1, 1, 1]], // 1x4 line
+
+    // Lines (vertical)
+    [[1], [1]], // 2x1 line
+    [[1], [1], [1]], // 3x1 line
+    [[1], [1], [1], [1]], // 4x1 line
   ];
 
   const randomShapeType = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
