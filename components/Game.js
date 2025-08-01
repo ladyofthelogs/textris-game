@@ -53,6 +53,25 @@ const Game = () => {
   const [gameStatus, setGameStatus] = useState(''); // 'win', 'lose', ''
   const [clearingCells, setClearingCells] = useState([]); // Stores coordinates of cells being cleared
 
+  const handleRestartGame = useCallback(() => {
+    setScore(0);
+    setTimeLeft(120); // Reset to 2 minutes
+    setGrid(Array(8).fill(null).map(() => Array(8).fill(null)));
+    const initialShapes = [];
+    for (let i = 0; i < 3; i++) {
+      initialShapes.push(generateRandomShape());
+    }
+    setUpcomingShapes(initialShapes);
+    setDraggedShape(null);
+    setDraggedShapeIndex(null);
+    setDraggedShapeClickedRow(null);
+    setDraggedShapeClickedCol(null);
+    setGhostShape(null);
+    setGameOver(false);
+    setGameStatus('');
+    setClearingCells([]);
+  }, []);
+
   useEffect(() => {
     // Initialize upcoming shapes only once on component mount
     if (upcomingShapes.length === 0) {
@@ -62,7 +81,7 @@ const Game = () => {
       }
       setUpcomingShapes(initialShapes);
     }
-  }, []); // Empty dependency array ensures this runs only once
+  }, [upcomingShapes.length]); // Add upcomingShapes.length to dependency array
 
   useEffect(() => {
     if (gameOver) return;
@@ -559,6 +578,7 @@ const Game = () => {
           ))}
         </div>
       </div>
+      <button onClick={handleRestartGame} className="restart-button">Restart</button>
     </div>
   );
 };

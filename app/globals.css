@@ -201,3 +201,19 @@ body {
   filter: brightness(0.5); /* Dims the content */
   pointer-events: none; /* Disables interaction with dimmed elements */
 }
+
+.restart-button {
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  margin-top: 20px; /* Add margin to match spacing */
+}
+
+.restart-button:hover {
+  background-color: #0056b3;
+}
