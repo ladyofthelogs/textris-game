@@ -159,9 +159,13 @@ const Game = () => {
         cellDiv.style.width = '40px';
         cellDiv.style.height = '40px';
         cellDiv.style.fontSize = '1.5em';
-        cellDiv.style.backgroundColor = '#e3f2fd'; // Apply background to cells
-        cellDiv.style.border = '1px solid #90caf9'; // Apply border to cells
-        cellDiv.style.boxShadow = 'inset 0 0 3px rgba(0, 0, 0, 0.2)'; // Apply box-shadow to cells
+        if (cell === null) {
+          cellDiv.style.opacity = '0'; // Make empty cells transparent but maintain shape
+        } else {
+          cellDiv.style.backgroundColor = '#e3f2fd'; // Apply background to cells
+          cellDiv.style.border = '1px solid #90caf9'; // Apply border to cells
+          cellDiv.style.boxShadow = 'inset 0 0 3px rgba(0, 0, 0, 0.2)'; // Apply box-shadow to cells
+        }
         shapeGrid.appendChild(cellDiv);
       });
     });
