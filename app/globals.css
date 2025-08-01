@@ -36,18 +36,21 @@ body {
 .game-info-top {
   display: flex;
   justify-content: space-between;
+  align-items: center; /* Align items vertically in the center */
   width: 100%;
   max-width: 320px; /* Adjust based on grid size */
   margin-bottom: 10px;
   padding: 0 20px; /* Padding for the whole screen */
   font-weight: bold;
+  color: #007bff; /* Blue color for time display */
+  font-size: 1.5em; /* Set font size for time display */
 }
 
 .score-display-main {
   text-align: center;
   font-size: 3em; /* Same as h1 */
   font-weight: bold;
-  margin-bottom: 20px; /* Space between score and grid */
+  margin-right: 20px; /* Space between score and time */
 }
 
 .score-animation {
@@ -114,7 +117,7 @@ body {
 }
 
 .ghost-cell {
-  background-color: #c5e1a5; /* Light green for ghost cells */
+  background-color: #ff00ff; /* Magenta for ghost cells */
   opacity: 0.6;
 }
 
@@ -125,11 +128,17 @@ body {
   margin-top: 20px;
   margin-bottom: 20px; /* Add margin-bottom to create consistent spacing */
   background-color: transparent; /* Remove debug background */
+  border: 2px solid #64b5f6; /* Add a blue border, same as grid */
+  padding: 10px; /* Add some padding inside the border */
+  border-radius: 8px; /* Slightly rounded corners */
+  width: 320px; /* Set width to match grid */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 .upcoming-shapes h2 {
   margin-bottom: 10px;
   color: #424242;
+  font-size: 1.5em; /* Set font size to match time display */
 }
 
 .shape-preview-container {
