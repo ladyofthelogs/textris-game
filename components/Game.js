@@ -373,7 +373,10 @@ const Game = () => {
         {shape.map((row, rowIndex) => (
           <React.Fragment key={rowIndex}>
             {row.map((cell, colIndex) => (
-              <div key={`${rowIndex}-${colIndex}`} className="shape-cell">
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className={`shape-cell ${cell === null ? 'hidden-cell' : ''}`}
+              >
                 {cell}
               </div>
             ))}
