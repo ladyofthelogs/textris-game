@@ -254,6 +254,53 @@ const Game = () => {
     checkGridForMatches(newGrid);
   };
 
+  const rotateShape = (shape) => {
+    const numRows = shape.length;
+    const numCols = shape[0].length;
+
+    // Create a new array for the rotated shape
+    const rotatedShape = Array(numCols).fill(null).map(() => Array(numRows).fill(null));
+
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
+        // Rotate 90 degrees clockwise
+        rotatedShape[c][numRows - 1 - r] = shape[r][c];
+      }
+    }
+
+    // Trim null rows/columns to maintain shape integrity
+    let minRow = numCols;
+    let maxRow = -1;
+    let minCol = numRows;
+    let maxCol = -1;
+
+    for (let r = 0; r < numCols; r++) {
+      for (let c = 0; c < numRows; c++) {
+        if (rotatedShape[r][c] !== null) {
+          minRow = Math.min(minRow, r);
+          maxRow = Math.max(maxRow, r);
+          minCol = Math.min(minCol, c);
+          maxCol = Math.max(maxCol, c);
+        }
+      }
+    }
+
+    if (minRow > maxRow || minCol > maxCol) {
+      // Shape is empty, return an empty shape or original shape
+      return shape;
+    }
+
+    const trimmedShape = [];
+    for (let r = minRow; r <= maxRow; r++) {
+      const newRow = [];
+      for (let c = minCol; c <= maxCol; c++) {
+        newRow.push(rotatedShape[r][c]);
+      }
+      trimmedShape.push(newRow);
+    }
+    return trimmedShape;
+  };
+
   const checkGridForMatches = useCallback((currentGrid) => {
     let newScore = score;
     let updatedGrid = currentGrid.map(row => [...row]);
@@ -319,18 +366,18 @@ const Game = () => {
       <div
         className="shape-grid"
         style={{
-          gridTemplateColumns: `repeat(${shape[0].length}, 20px)`,
+          gridTemplateColumns: `repeat(${shape[0] ? shape[0].length : 0}, 20px)`,
           gridTemplateRows: `repeat(${shape.length}, 20px)`,
         }}
       >
         {shape.map((row, rowIndex) => (
-          <div key={rowIndex} className="shape-row">
+          <React.Fragment key={rowIndex}>
             {row.map((cell, colIndex) => (
               <div key={`${rowIndex}-${colIndex}`} className="shape-cell">
                 {cell}
               </div>
             ))}
-          </div>
+          </React.Fragment>
         ))}
       </div>
     );
@@ -389,7 +436,14 @@ const Game = () => {
               className="shape-preview"
               draggable={!gameOver}
               onDragStart={!gameOver ? (e) => handleDragStart(e, shape, index) : null}
-              onClick={!gameOver ? () => console.log('Shape preview clicked!', shape) : null}
+              onClick={!gameOver ? () => {
+                const rotated = rotateShape(shape);
+                setUpcomingShapes(prevShapes => {
+                  const newShapes = [...prevShapes];
+                  newShapes[index] = rotated;
+                  return newShapes;
+                });
+              } : null}
               style={{ cursor: gameOver ? 'not-allowed' : 'pointer' }}
             >
               {renderShape(shape)}
