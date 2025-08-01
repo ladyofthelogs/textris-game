@@ -435,7 +435,7 @@ const Game = () => {
         setScore(newScore);
         setClearingCells([]); // Reset clearing cells
         console.log(`Cleared ${cellsToClear.length} cells. New score: ${newScore}`);
-      }, 500); // Delay clearing for 500ms for UX feedback
+      }, 300); // Delay clearing for 300ms for UX feedback (faster animation)
     } else if (newScore !== score) {
       setScore(newScore); // Update score immediately if only score changed (e.g., from lines cleared without words)
     }
