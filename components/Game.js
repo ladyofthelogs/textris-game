@@ -491,7 +491,7 @@ const Game = () => {
   };
 
   return (
-    <div className="game-container">
+    <div className={`game-container ${gameOver ? 'dimmed' : ''}`}>
       <h1>TEXTRIS</h1>
       {gameOver && (
         <div className="game-over-overlay">
