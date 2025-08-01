@@ -57,6 +57,7 @@ const Game = () => {
   const [gameStatus, setGameStatus] = useState(''); // 'win', 'lose', ''
   const [clearingCells, setClearingCells] = useState([]); // Stores coordinates of cells being cleared
   const [isDragging, setIsDragging] = useState(false); // New state to track dragging
+  const [placeholderShapeIndex, setPlaceholderShapeIndex] = useState(null); // New state for placeholder
 
   const handleRestartGame = useCallback(() => {
     setScore(0);
@@ -76,6 +77,7 @@ const Game = () => {
     setGameStatus('');
     setClearingCells([]);
     setIsDragging(false); // Reset dragging state on restart
+    setPlaceholderShapeIndex(null); // Reset placeholder state on restart
   }, []);
 
   useEffect(() => {
@@ -187,9 +189,9 @@ const Game = () => {
     setDraggedShapeClickedRow(clickedShapeRow);
     setDraggedShapeClickedCol(clickedShapeCol);
     setIsDragging(true); // Set dragging state to true
+    setPlaceholderShapeIndex(index); // Set the index of the shape to be a placeholder
 
-    // Hide the original shape-preview element
-    e.currentTarget.classList.add('hide-original-shape');
+    // The original shape-preview element will now render as a placeholder
   };
 
   const handleDragOver = (e) => {
@@ -538,6 +540,7 @@ const Game = () => {
     setDraggedShapeClickedCol(null);
     setGhostShape(null);
     setIsDragging(false); // Set dragging state to false
+    setPlaceholderShapeIndex(null); // Reset placeholder state on drag end
 
     // Remove the custom drag image if it exists
     const dragImage = document.querySelector('.drag-image-custom');
@@ -551,7 +554,7 @@ const Game = () => {
     }
   };
 
-  const renderShape = (shape) => {
+  const renderShape = (shape, isPlaceholder = false) => {
     return (
       <div
         className="shape-grid"
@@ -565,9 +568,9 @@ const Game = () => {
             {row.map((cell, colIndex) => (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className={`shape-cell ${cell === null ? 'hidden-cell' : ''}`}
+                className={`shape-cell ${cell === null ? 'hidden-cell' : ''} ${isPlaceholder ? 'placeholder-cell' : ''}`}
               >
-                {cell}
+                {isPlaceholder ? '' : cell}
               </div>
             ))}
           </React.Fragment>
@@ -643,7 +646,7 @@ const Game = () => {
                 // No dynamic width/height here, as the drag image handles scaling
               }}
             >
-              {renderShape(shape)}
+              {renderShape(shape, placeholderShapeIndex === index)}
             </div>
           ))}
         </div>

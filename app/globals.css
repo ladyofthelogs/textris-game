@@ -149,6 +149,13 @@ body {
   box-shadow: none;
 }
 
+.placeholder-cell {
+  background-color: #d3d3d3; /* Light gray fill */
+  border: 1px solid #a9a9a9; /* Slightly darker gray border */
+  color: transparent; /* Hide letters */
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
 .shape-preview.is-dragged .shape-cell {
   width: 40px;
   height: 40px;
