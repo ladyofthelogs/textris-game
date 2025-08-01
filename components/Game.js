@@ -9,14 +9,13 @@ const getRandomLetter = () => {
 // Helper function to generate a random shape
 const generateRandomShape = () => {
   const shapeTypes = [
-    [[1]], // 1x1 block
-    [[1, 1]], // 1x2 block
-    [[1], [1]], // 2x1 block
     [[1, 1], [1, 1]], // 2x2 block
     [[1, 1, 1]], // 1x3 block
     [[1], [1], [1]], // 3x1 block
-    [[1, 1, 0], [0, 1, 1]], // Z shape
-    [[0, 1, 1], [1, 1, 0]], // S shape
+    [[1, 1, 0], [0, 1, 1]], // Z shape (horizontal)
+    [[0, 1], [1, 1], [1, 0]], // Z shape (vertical)
+    [[0, 1, 1], [1, 1, 0]], // S shape (horizontal)
+    [[1, 0], [1, 1], [0, 1]], // S shape (vertical)
     [[1, 1, 1], [0, 1, 0]], // T shape
   ];
 
@@ -36,6 +35,8 @@ const Game = () => {
   const [upcomingShapes, setUpcomingShapes] = useState([]);
   const [draggedShape, setDraggedShape] = useState(null);
   const [draggedShapeIndex, setDraggedShapeIndex] = useState(null);
+  const [draggedShapeClickedRow, setDraggedShapeClickedRow] = useState(null);
+  const [draggedShapeClickedCol, setDraggedShapeClickedCol] = useState(null);
   const [ghostShape, setGhostShape] = useState(null);
   const [gameOver, setGameOver] = useState(false);
   const [gameStatus, setGameStatus] = useState(''); // 'win', 'lose', ''
@@ -87,20 +88,33 @@ const Game = () => {
   };
 
   const handleDragStart = (e, shape, index) => {
-    console.log('Drag Start - Shape:', shape, 'Index:', index);
-    e.dataTransfer.setData('application/json', JSON.stringify({ shape, index }));
+    console.log('handleDragStart - Shape:', shape, 'Index:', index);
+    const previewRect = e.currentTarget.getBoundingClientRect();
+    const offsetX = e.clientX - previewRect.left;
+    const offsetY = e.clientY - previewRect.top;
+    console.log('handleDragStart - offsetX:', offsetX, 'offsetY:', offsetY);
+
+    // Calculate the cell within the shape-preview that was clicked
+    // Assuming shape-cell size is 20px as defined in globals.css
+    const clickedShapeCol = Math.floor(offsetX / 20);
+    const clickedShapeRow = Math.floor(offsetY / 20);
+
+    e.dataTransfer.setData('text/plain', index); // Only transfer index, shape is in state
     e.dataTransfer.effectAllowed = 'move'; // Explicitly allow 'move' effect
     setDraggedShape(shape);
     setDraggedShapeIndex(index);
+    setDraggedShapeClickedRow(clickedShapeRow);
+    setDraggedShapeClickedCol(clickedShapeCol);
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
     if (!draggedShape) {
-      console.log('No draggedShape in state, returning.');
+      console.log('handleDragOver - No draggedShape in state, returning.');
       return;
     }
     const currentDraggedShape = draggedShape;
+    console.log('handleDragOver - currentDraggedShape:', currentDraggedShape);
 
     const gameGrid = e.currentTarget;
     const gridRect = gameGrid.getBoundingClientRect();
@@ -109,10 +123,13 @@ const Game = () => {
     const mouseX = e.clientX - gridRect.left;
     const mouseY = e.clientY - gridRect.top;
 
-    const startCol = Math.floor(mouseX / cellSize);
-    const startRow = Math.floor(mouseY / cellSize);
+    // Calculate the top-left corner of the shape relative to the grid
+    // This is where the shape's (0,0) cell would be placed
+    let startCol = Math.floor((mouseX - (draggedShapeClickedCol * 20)) / cellSize);
+    let startRow = Math.floor((mouseY - (draggedShapeClickedRow * 20)) / cellSize);
 
-    console.log(`MouseX: ${mouseX}, MouseY: ${mouseY}, StartRow: ${startRow}, StartCol: ${startCol}`);
+    console.log(`handleDragOver - MouseX: ${mouseX}, MouseY: ${mouseY}, Calculated StartRow: ${startRow}, Calculated StartCol: ${startCol}`);
+    console.log('handleDragOver - draggedShapeClickedRow:', draggedShapeClickedRow, 'draggedShapeClickedCol:', draggedShapeClickedCol);
 
     const newGhostShape = [];
     let canPlace = true;
@@ -137,7 +154,7 @@ const Game = () => {
       if (!canPlace) break;
     }
 
-    console.log('Can Place:', canPlace, 'New Ghost Shape:', newGhostShape);
+    console.log('handleDragOver - Can Place:', canPlace, 'New Ghost Shape:', newGhostShape);
 
     if (canPlace) {
       setGhostShape(newGhostShape);
@@ -181,25 +198,28 @@ const Game = () => {
 
   const handleDrop = (e) => {
     e.preventDefault();
-    console.log('Drop event triggered.');
+    console.log('handleDrop - Drop event triggered.');
     if (!ghostShape) {
-      console.log('No ghostShape, cannot drop.');
+      console.log('handleDrop - No ghostShape, cannot drop.');
       return;
     }
 
     if (!draggedShape || draggedShapeIndex === null) {
-      console.log('No draggedShape or draggedShapeIndex in state, cannot drop.');
+      console.log('handleDrop - No draggedShape or draggedShapeIndex in state, cannot drop.');
       return;
     }
     const shape = draggedShape;
     const index = draggedShapeIndex;
+    console.log('handleDrop - shape:', shape, 'index:', index);
 
     const newGrid = grid.map(row => [...row]);
 
+    // The ghostShape already contains the adjusted coordinates, so we can use its first element
+    // as the top-left placement for the actual shape.
     const startRow = ghostShape[0].row;
     const startCol = ghostShape[0].col;
 
-    console.log(`Dropping shape at startRow: ${startRow}, startCol: ${startCol}`);
+    console.log(`handleDrop - Dropping shape at startRow: ${startRow}, startCol: ${startCol}`);
 
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
@@ -207,13 +227,13 @@ const Game = () => {
           const gridRow = startRow + r;
           const gridCol = startCol + c;
           newGrid[gridRow][gridCol] = shape[r][c];
-          console.log(`Placed ${shape[r][c]} at [${gridRow}, ${gridCol}]`);
+          console.log(`handleDrop - Placed ${shape[r][c]} at [${gridRow}, ${gridCol}]`);
         }
       }
     }
 
     setGrid(newGrid);
-    console.log('Grid updated.');
+    console.log('handleDrop - Grid updated:', newGrid);
 
     setUpcomingShapes((prevShapes) => {
       const updatedShapes = prevShapes.filter((_, i) => i !== index);
@@ -221,14 +241,16 @@ const Game = () => {
       if (updatedShapes.length < 3) {
         updatedShapes.push(generateRandomShape());
       }
-      console.log('Upcoming shapes updated:', updatedShapes);
+      console.log('handleDrop - Upcoming shapes updated:', updatedShapes);
       return updatedShapes;
     });
 
     setDraggedShape(null);
     setDraggedShapeIndex(null);
+    setDraggedShapeClickedRow(null);
+    setDraggedShapeClickedCol(null);
     setGhostShape(null);
-    console.log('Drag state reset.');
+    console.log('handleDrop - Drag state reset.');
     checkGridForMatches(newGrid);
   };
 
@@ -287,6 +309,8 @@ const Game = () => {
   const handleDragEnd = () => {
     setDraggedShape(null);
     setDraggedShapeIndex(null);
+    setDraggedShapeClickedRow(null);
+    setDraggedShapeClickedCol(null);
     setGhostShape(null);
   };
 
