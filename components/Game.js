@@ -137,8 +137,11 @@ const Game = () => {
 
     // Calculate the top-left corner of the shape relative to the grid
     // This is where the shape's (0,0) cell would be placed
-    let startCol = Math.floor((mouseX - (draggedShapeClickedCol * 20)) / cellSize);
-    let startRow = Math.floor((mouseY - (draggedShapeClickedRow * 20)) / cellSize);
+    // Calculate the top-left corner of the shape relative to the grid
+    // This is where the shape's (0,0) cell would be placed
+    // Adjust mouse position by the clicked cell's offset within the shape, then divide by grid cell size
+    let startCol = Math.floor(mouseX / cellSize) - draggedShapeClickedCol;
+    let startRow = Math.floor(mouseY / cellSize) - draggedShapeClickedRow;
 
     console.log(`handleDragOver - MouseX: ${mouseX}, MouseY: ${mouseY}, Calculated StartRow: ${startRow}, Calculated StartCol: ${startCol}`);
     console.log('handleDragOver - draggedShapeClickedRow:', draggedShapeClickedRow, 'draggedShapeClickedCol:', draggedShapeClickedCol);
@@ -435,7 +438,7 @@ const Game = () => {
         setScore(newScore);
         setClearingCells([]); // Reset clearing cells
         console.log(`Cleared ${cellsToClear.length} cells. New score: ${newScore}`);
-      }, 300); // Delay clearing for 300ms for UX feedback (faster animation)
+      }, 300); // Delay clearing for 300ms to allow animation to play out
     } else if (newScore !== score) {
       setScore(newScore); // Update score immediately if only score changed (e.g., from lines cleared without words)
     }
@@ -489,7 +492,7 @@ const Game = () => {
 
   return (
     <div className="game-container">
-      <h1>Textris Game</h1>
+      <h1>TEXTRIS</h1>
       {gameOver && (
         <div className="game-over-overlay">
           <p className="game-over-message">
@@ -498,14 +501,12 @@ const Game = () => {
           <button onClick={() => window.location.reload()}>Play Again</button>
         </div>
       )}
-      <div className="game-info">
-        <div className="score-display">
-          <p>Score Needed: {scoreNeeded}</p>
-          <p>Player's Score: {score}</p>
-        </div>
-        <div className="timer-display">
-          <p>Time: {formatTime(timeLeft)}</p>
-        </div>
+      <div className="game-info-top">
+        <p>Score Needed: {scoreNeeded}</p>
+        <p>Time: {formatTime(timeLeft)}</p>
+      </div>
+      <div className="score-display-main">
+        {score}
       </div>
 
       <div
@@ -535,7 +536,7 @@ const Game = () => {
       </div>
 
       <div className="upcoming-shapes">
-        <h2>Upcoming Shapes</h2>
+        <h2 style={{ color: '#007bff' }}>Tap to rotate</h2>
         <div className="shape-preview-container">
           {upcomingShapes.map((shape, index) => (
             <div

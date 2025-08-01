@@ -24,18 +24,21 @@ body {
   box-sizing: border-box;
 }
 
-.game-info {
+.game-info-top {
   display: flex;
   justify-content: space-between;
   width: 100%;
   max-width: 320px; /* Adjust based on grid size */
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   padding: 0 20px; /* Padding for the whole screen */
+  font-weight: bold;
 }
 
-.score-display, .timer-display {
+.score-display-main {
   text-align: center;
+  font-size: 3em; /* Same as h1 */
   font-weight: bold;
+  margin-bottom: 20px; /* Space between score and grid */
 }
 
 .game-grid {
@@ -135,6 +138,16 @@ body {
 .clearing-cell {
   background-color: #ffeb3b; /* Yellow highlight */
   border: 2px solid #f57f17; /* Orange outline */
-  transition: background-color 0.3s ease-out, opacity 0.3s ease-out, border 0.3s ease-out; /* Faster animation */
-  opacity: 0; /* Will fade out */
+  animation: fadeOutAndShrink 0.3s forwards; /* Apply animation */
+}
+
+@keyframes fadeOutAndShrink {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8); /* Slightly shrink as it fades */
+  }
 }
