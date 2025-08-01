@@ -143,15 +143,25 @@ const Game = () => {
 
     // Render the shape into the custom drag image element
     const shapeGrid = document.createElement('div');
-    shapeGrid.className = 'shape-grid dragged-shape-cell'; // Use the class for enlarged, transparent cells
+    shapeGrid.className = 'shape-grid';
     shapeGrid.style.gridTemplateColumns = `repeat(${shape[0] ? shape[0].length : 0}, 40px)`;
     shapeGrid.style.gridTemplateRows = `repeat(${shape.length}, 40px)`;
+    // Remove background and border from shapeGrid, apply to individual cells
+    shapeGrid.style.backgroundColor = 'transparent';
+    shapeGrid.style.border = 'none';
 
     shape.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         const cellDiv = document.createElement('div');
         cellDiv.className = `shape-cell ${cell === null ? 'hidden-cell' : ''}`;
         cellDiv.textContent = cell;
+        // Apply enlarged, background, and border styles directly to cells
+        cellDiv.style.width = '40px';
+        cellDiv.style.height = '40px';
+        cellDiv.style.fontSize = '1.5em';
+        cellDiv.style.backgroundColor = '#e3f2fd'; // Apply background to cells
+        cellDiv.style.border = '1px solid #90caf9'; // Apply border to cells
+        cellDiv.style.boxShadow = 'inset 0 0 3px rgba(0, 0, 0, 0.2)'; // Apply box-shadow to cells
         shapeGrid.appendChild(cellDiv);
       });
     });
