@@ -313,10 +313,11 @@ const Game = () => {
     return trimmedShape;
   };
 
-  const checkGridForMatches = useCallback((currentGrid) => {
+  const checkGridForMatches = useCallback(async (currentGrid) => { // Make it async
     let newScore = score;
     let updatedGrid = currentGrid.map(row => [...row]);
     let cellsToClear = []; // Collect all cells to be cleared for UX feedback
+    let potentialWords = []; // Collect potential words for API validation
 
     // Check rows
     for (let r = 0; r < updatedGrid.length; r++) {
@@ -345,57 +346,83 @@ const Game = () => {
       }
     }
 
+    // Helper to find all words in a contiguous sequence
+    const findAllWordsInSequence = (sequence, sequenceCells) => {
+      for (let i = 0; i < sequence.length; i++) {
+        for (let j = i + 2; j < sequence.length; j++) { // Words must be at least 3 letters
+          const word = sequence.substring(i, j + 1);
+          const cells = sequenceCells.slice(i, j + 1);
+          potentialWords.push({ word, cells });
+        }
+      }
+    };
+
     // Check for horizontal words
     for (let r = 0; r < updatedGrid.length; r++) {
-      let currentWord = '';
-      let wordCells = [];
+      let currentSequence = '';
+      let sequenceCells = [];
       for (let c = 0; c < updatedGrid[r].length; c++) {
         if (updatedGrid[r][c] !== null) {
-          currentWord += updatedGrid[r][c];
-          wordCells.push({ r, c });
+          currentSequence += updatedGrid[r][c];
+          sequenceCells.push({ r, c });
         } else {
-          if (currentWord.length >= 3) {
-            newScore += currentWord.length * 5; // Award points for word length
-            cellsToClear.push(...wordCells); // Add to cells to clear
-            console.log(`Formed horizontal word: ${currentWord}. Awarded ${currentWord.length * 5} points.`);
+          if (currentSequence.length >= 3) {
+            findAllWordsInSequence(currentSequence, sequenceCells);
           }
-          currentWord = '';
-          wordCells = [];
+          currentSequence = '';
+          sequenceCells = [];
         }
       }
       // Check at the end of the row
-      if (currentWord.length >= 3) {
-        newScore += currentWord.length * 5;
-        cellsToClear.push(...wordCells); // Add to cells to clear
-        console.log(`Formed horizontal word: ${currentWord}. Awarded ${currentWord.length * 5} points.`);
+      if (currentSequence.length >= 3) {
+        findAllWordsInSequence(currentSequence, sequenceCells);
       }
     }
 
     // Check for vertical words
     for (let c = 0; c < updatedGrid[0].length; c++) {
-      let currentWord = '';
-      let wordCells = [];
+      let currentSequence = '';
+      let sequenceCells = [];
       for (let r = 0; r < updatedGrid.length; r++) {
         if (updatedGrid[r][c] !== null) {
-          currentWord += updatedGrid[r][c];
-          wordCells.push({ r, c });
+          currentSequence += updatedGrid[r][c];
+          sequenceCells.push({ r, c });
         } else {
-          if (currentWord.length >= 3) {
-            newScore += currentWord.length * 5; // Award points for word length
-            cellsToClear.push(...wordCells); // Add to cells to clear
-            console.log(`Formed vertical word: ${currentWord}. Awarded ${currentWord.length * 5} points.`);
+          if (currentSequence.length >= 3) {
+            findAllWordsInSequence(currentSequence, sequenceCells);
           }
-          currentWord = '';
-          wordCells = [];
+          currentSequence = '';
+          sequenceCells = [];
         }
       }
       // Check at the end of the column
-      if (currentWord.length >= 3) {
-        newScore += currentWord.length * 5;
-        cellsToClear.push(...wordCells); // Add to cells to clear
-        console.log(`Formed vertical word: ${currentWord}. Awarded ${currentWord.length * 5} points.`);
+      if (currentSequence.length >= 3) {
+        findAllWordsInSequence(currentSequence, sequenceCells);
       }
     }
+
+    // Process potential words asynchronously
+    const validatedWords = [];
+    for (const { word, cells } of potentialWords) {
+      try {
+        const response = await fetch(`/api/dictionary?word=${word}`);
+        const data = await response.json();
+        if (data.isValid) {
+          validatedWords.push({ word, cells });
+          newScore += word.length * 5; // Award points for valid word length
+          console.log(`Formed valid word: ${word}. Awarded ${word.length * 5} points.`);
+        } else {
+          console.log(`"${word}" is not a valid word.`);
+        }
+      } catch (error) {
+        console.error(`Error validating word "${word}":`, error);
+      }
+    }
+
+    // Add cells from validated words to cellsToClear
+    validatedWords.forEach(({ cells }) => {
+      cellsToClear.push(...cells);
+    });
 
     if (cellsToClear.length > 0) {
       setClearingCells(cellsToClear); // Set cells to be highlighted for clearing
