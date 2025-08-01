@@ -43,7 +43,7 @@ const generateRandomShape = () => {
 const Game = () => {
   const [score, setScore] = useState(0);
   const [scoreNeeded, setScoreNeeded] = useState(100); // Example: 100 points needed for level 1
-  const [timeLeft, setTimeLeft] = useState(60); // 1 minute timer
+  const [timeLeft, setTimeLeft] = useState(180); // 3 minute timer
   const [grid, setGrid] = useState(() =>
     Array(8).fill(null).map(() => Array(8).fill(null))
   ); // 8x8 grid, null for empty, ensuring unique inner arrays
@@ -61,7 +61,7 @@ const Game = () => {
 
   const handleRestartGame = useCallback(() => {
     setScore(0);
-    setTimeLeft(120); // Reset to 2 minutes
+    setTimeLeft(180); // Reset to 3 minutes
     setGrid(Array(8).fill(null).map(() => Array(8).fill(null)));
     const initialShapes = [];
     for (let i = 0; i < 3; i++) {
