@@ -304,8 +304,17 @@ body {
   transition: left 2.5s linear; /* Animation duration */
 }
 
-.nyan-cat-container.fly-in {
+.nyan-cat-container.left-to-right {
   left: 100vw; /* End off-screen to the right */
+}
+
+.nyan-cat-container.right-to-left {
+  left: calc(100vw + 200px); /* Start off-screen to the right */
+  transform: translateY(-50%) scaleX(-1); /* Flip horizontally */
+}
+
+.nyan-cat-container.right-to-left.fly-in {
+  left: -200px; /* End off-screen to the left */
 }
 
 .nyan-cat-image {

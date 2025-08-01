@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import NyanCat from './NyanCat';
+import RealisticCatFlyer from './RealisticCatFlyer';
 
 // Helper function to generate a random letter
 const getRandomLetter = () => {
@@ -501,6 +501,15 @@ const Game = () => {
       }
     }
 
+    // Update score and trigger cat animation as words are tracked
+    if (newScore !== score) {
+      setScore(newScore);
+      setScoreAnimationTrigger(prev => prev + 1);
+    }
+    if (validatedWords.length > 0) {
+      setNyanCatTrigger(prev => prev + 1);
+    }
+
     // Add cells from validated words to cellsToClear
     validatedWords.forEach(({ cells }) => {
       cellsToClear.push(...cells);
@@ -514,24 +523,14 @@ const Game = () => {
           finalGrid[cell.r][cell.c] = null; // Clear the cells
         });
         setGrid(finalGrid);
-        setScore(newScore);
         setClearingCells([]); // Reset clearing cells
-        console.log(`Cleared ${cellsToClear.length} cells. New score: ${newScore}`);
-        setScoreAnimationTrigger(prev => prev + 1); // Trigger animation
-        if (validatedWords.length > 0) {
-          setNyanCatTrigger(prev => prev + 1); // Trigger Nyan Cat animation
-        }
+        console.log(`Cleared ${cellsToClear.length} cells.`);
       }, 300); // Delay clearing for 300ms to allow animation to play out
     }
-    
-    // Trigger Nyan Cat animation if words were validated, regardless of cells cleared
-    if (validatedWords.length > 0) {
-      setNyanCatTrigger(prev => prev + 1);
-    }
 
-    if (newScore !== score) {
-      setScore(newScore); // Update score immediately if only score changed (e.g., from lines cleared without words)
-      setScoreAnimationTrigger(prev => prev + 1); // Trigger animation
+    if (newScore >= scoreNeeded) {
+      setGameOver(true);
+      setGameStatus('win');
     }
 
     if (newScore >= scoreNeeded) {
@@ -596,7 +595,7 @@ const Game = () => {
 
   return (
     <div className={`game-container ${gameOver ? 'dimmed' : ''}`}>
-      <NyanCat trigger={nyanCatTrigger} />
+      <RealisticCatFlyer trigger={nyanCatTrigger} />
       <h1>TEXTRIS</h1>
       {gameOver && (
         <div className="game-over-overlay">
