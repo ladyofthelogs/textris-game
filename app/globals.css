@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Iso&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -23,6 +25,14 @@ body {
   background-color: #e0f2f7; /* Muted monochromatic light blue */
   min-height: 100vh;
   box-sizing: border-box;
+}
+
+.game-container h1 {
+  font-family: 'Rubik Iso', cursive;
+  font-size: 4em; /* Adjust as needed */
+  color: #007bff; /* Example color */
+  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
 }
 
 .game-info-top {

@@ -128,9 +128,9 @@ const Game = () => {
     console.log('handleDragStart - offsetX:', offsetX, 'offsetY:', offsetY);
 
     // Calculate the cell within the shape-preview that was clicked
-    // Assuming shape-cell size is 20px as defined in globals.css
-    const clickedShapeCol = Math.floor(offsetX / 20);
-    const clickedShapeRow = Math.floor(offsetY / 20);
+    // Assuming shape-cell size is 40px for the drag image
+    const clickedShapeCol = Math.floor(offsetX / 40);
+    const clickedShapeRow = Math.floor(offsetY / 40);
 
     // Create a custom drag image
     const dragImage = document.createElement('div');
@@ -298,23 +298,24 @@ const Game = () => {
 
     const newGrid = grid.map(row => [...row]);
 
-    // The ghostShape already contains the adjusted coordinates, so we can use its first element
-    // as the top-left placement for the actual shape.
-    const startRow = ghostShape[0].row;
-    const startCol = ghostShape[0].col;
+    // The ghostShape contains the coordinates of where each cell of the shape should be placed.
+    // We iterate through the ghostShape to place the cells.
+    console.log(`handleDrop - Dropping shape using ghostShape coordinates.`);
 
-    console.log(`handleDrop - Dropping shape at startRow: ${startRow}, startCol: ${startCol}`);
+    ghostShape.forEach(ghostCell => {
+      const { row: gridRow, col: gridCol } = ghostCell;
+      // Find the corresponding cell in the original draggedShape
+      // This assumes ghostShape cells are ordered in a way that corresponds to the shape's internal structure
+      // A more robust solution might involve storing the original shape's cell value in the ghostShape object
+      // For now, we'll infer it based on the relative position from the first ghost cell
+      const relativeRow = gridRow - ghostShape[0].row;
+      const relativeCol = gridCol - ghostShape[0].col;
 
-    for (let r = 0; r < shape.length; r++) {
-      for (let c = 0; c < shape[r].length; c++) {
-        if (shape[r][c] !== null) {
-          const gridRow = startRow + r;
-          const gridCol = startCol + c;
-          newGrid[gridRow][gridCol] = shape[r][c];
-          console.log(`handleDrop - Placed ${shape[r][c]} at [${gridRow}, ${gridCol}]`);
-        }
+      if (shape[relativeRow] && shape[relativeRow][relativeCol] !== null) {
+        newGrid[gridRow][gridCol] = shape[relativeRow][relativeCol];
+        console.log(`handleDrop - Placed ${shape[relativeRow][relativeCol]} at [${gridRow}, ${gridCol}]`);
       }
-    }
+    });
 
     setGrid(newGrid);
     console.log('handleDrop - Grid updated:', newGrid);
