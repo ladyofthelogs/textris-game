@@ -58,6 +58,7 @@ const Game = () => {
   const [clearingCells, setClearingCells] = useState([]); // Stores coordinates of cells being cleared
   const [isDragging, setIsDragging] = useState(false); // New state to track dragging
   const [placeholderShapeIndex, setPlaceholderShapeIndex] = useState(null); // New state for placeholder
+  const [scoreAnimationTrigger, setScoreAnimationTrigger] = useState(0); // New state to trigger score animation
 
   const handleRestartGame = useCallback(() => {
     setScore(0);
@@ -514,9 +515,11 @@ const Game = () => {
         setScore(newScore);
         setClearingCells([]); // Reset clearing cells
         console.log(`Cleared ${cellsToClear.length} cells. New score: ${newScore}`);
+        setScoreAnimationTrigger(prev => prev + 1); // Trigger animation
       }, 300); // Delay clearing for 300ms to allow animation to play out
     } else if (newScore !== score) {
       setScore(newScore); // Update score immediately if only score changed (e.g., from lines cleared without words)
+      setScoreAnimationTrigger(prev => prev + 1); // Trigger animation
     }
 
     if (newScore >= scoreNeeded) {
@@ -591,7 +594,10 @@ const Game = () => {
         </div>
       )}
       <div className="game-info-top">
-        <div className="score-display-main">
+        <div
+          key={scoreAnimationTrigger} // Key change forces re-render and re-application of animation
+          className="score-display-main score-animation"
+        >
           {score}
         </div>
         <p>Time: {formatTime(timeLeft)}</p>

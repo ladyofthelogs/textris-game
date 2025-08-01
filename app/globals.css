@@ -50,6 +50,43 @@ body {
   margin-bottom: 20px; /* Space between score and grid */
 }
 
+.score-animation {
+  animation: scorePop 0.3s ease-out forwards, scoreFlash 0.6s ease-out forwards;
+}
+
+@keyframes scorePop {
+  0% {
+    transform: scale(1);
+    color: #007bff;
+  }
+  50% {
+    transform: scale(1.2);
+    color: #28a745; /* Green for positive change */
+  }
+  100% {
+    transform: scale(1);
+    color: #007bff;
+  }
+}
+
+@keyframes scoreFlash {
+  0% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .game-grid {
   display: grid;
   grid-template-columns: repeat(8, 40px); /* 8x8 grid, adjust cell size as needed */
