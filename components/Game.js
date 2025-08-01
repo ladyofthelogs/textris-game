@@ -52,6 +52,7 @@ const Game = () => {
   const [gameOver, setGameOver] = useState(false);
   const [gameStatus, setGameStatus] = useState(''); // 'win', 'lose', ''
   const [clearingCells, setClearingCells] = useState([]); // Stores coordinates of cells being cleared
+  const [isDragging, setIsDragging] = useState(false); // New state to track dragging
 
   const handleRestartGame = useCallback(() => {
     setScore(0);
@@ -70,6 +71,7 @@ const Game = () => {
     setGameOver(false);
     setGameStatus('');
     setClearingCells([]);
+    setIsDragging(false); // Reset dragging state on restart
   }, []);
 
   useEffect(() => {
@@ -130,12 +132,46 @@ const Game = () => {
     const clickedShapeCol = Math.floor(offsetX / 20);
     const clickedShapeRow = Math.floor(offsetY / 20);
 
+    // Create a custom drag image
+    const dragImage = document.createElement('div');
+    dragImage.className = 'drag-image-custom'; // Apply custom styling for the drag image
+    dragImage.style.position = 'absolute';
+    dragImage.style.top = '-1000px'; // Position off-screen
+    dragImage.style.left = '-1000px';
+    dragImage.style.pointerEvents = 'none'; // Ensure it doesn't interfere with mouse events
+    dragImage.style.zIndex = '9999'; // Ensure it's on top
+
+    // Render the shape into the custom drag image element
+    const shapeGrid = document.createElement('div');
+    shapeGrid.className = 'shape-grid dragged-shape-cell'; // Use the class for enlarged, transparent cells
+    shapeGrid.style.gridTemplateColumns = `repeat(${shape[0] ? shape[0].length : 0}, 40px)`;
+    shapeGrid.style.gridTemplateRows = `repeat(${shape.length}, 40px)`;
+
+    shape.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        const cellDiv = document.createElement('div');
+        cellDiv.className = `shape-cell ${cell === null ? 'hidden-cell' : ''}`;
+        cellDiv.textContent = cell;
+        shapeGrid.appendChild(cellDiv);
+      });
+    });
+
+    dragImage.appendChild(shapeGrid);
+    document.body.appendChild(dragImage);
+
+    // Set the custom drag image
+    e.dataTransfer.setDragImage(dragImage, offsetX * 2, offsetY * 2); // Scale offset by 2 since cells are 2x larger
+
     e.dataTransfer.setData('text/plain', index); // Only transfer index, shape is in state
     e.dataTransfer.effectAllowed = 'move'; // Explicitly allow 'move' effect
     setDraggedShape(shape);
     setDraggedShapeIndex(index);
     setDraggedShapeClickedRow(clickedShapeRow);
     setDraggedShapeClickedCol(clickedShapeCol);
+    setIsDragging(true); // Set dragging state to true
+
+    // Hide the original shape-preview element
+    e.currentTarget.classList.add('hide-original-shape');
   };
 
   const handleDragOver = (e) => {
@@ -476,12 +512,24 @@ const Game = () => {
   }, [gameOver, gameStatus]);
 
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e) => {
     setDraggedShape(null);
     setDraggedShapeIndex(null);
     setDraggedShapeClickedRow(null);
     setDraggedShapeClickedCol(null);
     setGhostShape(null);
+    setIsDragging(false); // Set dragging state to false
+
+    // Remove the custom drag image if it exists
+    const dragImage = document.querySelector('.drag-image-custom');
+    if (dragImage) {
+      dragImage.remove();
+    }
+
+    // Show the original shape-preview element
+    if (e.currentTarget) {
+      e.currentTarget.classList.remove('hide-original-shape');
+    }
   };
 
   const renderShape = (shape) => {
@@ -560,9 +608,10 @@ const Game = () => {
           {upcomingShapes.map((shape, index) => (
             <div
               key={index}
-              className="shape-preview"
+              className={`shape-preview ${isDragging && draggedShapeIndex === index ? 'is-dragged' : ''}`}
               draggable={!gameOver}
               onDragStart={!gameOver ? (e) => handleDragStart(e, shape, index) : null}
+              onDragEnd={!gameOver ? (e) => handleDragEnd(e) : null}
               onClick={!gameOver ? () => {
                 const rotated = rotateShape(shape);
                 setUpcomingShapes(prevShapes => {
@@ -571,7 +620,10 @@ const Game = () => {
                   return newShapes;
                 });
               } : null}
-              style={{ cursor: gameOver ? 'not-allowed' : 'pointer' }}
+              style={{
+                cursor: gameOver ? 'not-allowed' : 'pointer',
+                // No dynamic width/height here, as the drag image handles scaling
+              }}
             >
               {renderShape(shape)}
             </div>
